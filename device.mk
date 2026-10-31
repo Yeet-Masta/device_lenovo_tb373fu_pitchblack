@@ -2,10 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-LOCAL_PATH := device/lenovo/TB373FU
-
-PRODUCT_SOONG_NAMESPACES += $(LOCAL_PATH)
-TARGET_RECOVERY_DEVICE_DIRS += $(LOCAL_PATH)
+PRODUCT_SOONG_NAMESPACES += device/lenovo/TB373FU
 
 # API levels (stock launched on Android 14)
 PRODUCT_SHIPPING_API_LEVEL := 34

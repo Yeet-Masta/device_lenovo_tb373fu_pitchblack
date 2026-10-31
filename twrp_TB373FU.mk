@@ -4,7 +4,12 @@
 # OrangeFox for the Lenovo Idea Tab Pro (TB373FU), the ROW variant of the
 # Xiaoxin Pad Pro 12.7 (2025). MT6897, GKI 6.1, recovery in vendor_boot.
 
-# Inherit from our custom product configuration (base.mk + 64-bit only)
+# AOSP base, 64-bit only (the recovery carries no 32-bit userspace)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit_only.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/base.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/emulated_storage.mk)
+
+# Inherit from our custom product configuration
 $(call inherit-product, vendor/twrp/config/common.mk)
 
 # Device-specific

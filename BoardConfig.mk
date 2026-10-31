@@ -83,11 +83,21 @@ TARGET_COPY_OUT_ODM         := odm
 TARGET_COPY_OUT_VENDOR_DLKM := vendor_dlkm
 TARGET_COPY_OUT_ODM_DLKM    := odm_dlkm
 TARGET_COPY_OUT_SYSTEM_DLKM := system_dlkm
+BOARD_SYSTEMIMAGE_FILE_SYSTEM_TYPE      := erofs
+BOARD_SYSTEM_EXTIMAGE_FILE_SYSTEM_TYPE  := erofs
+BOARD_PRODUCTIMAGE_FILE_SYSTEM_TYPE     := erofs
+BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE      := erofs
+BOARD_ODMIMAGE_FILE_SYSTEM_TYPE         := erofs
+BOARD_VENDOR_DLKMIMAGE_FILE_SYSTEM_TYPE := erofs
+BOARD_ODM_DLKMIMAGE_FILE_SYSTEM_TYPE    := erofs
+BOARD_SYSTEM_DLKMIMAGE_FILE_SYSTEM_TYPE := erofs
 
 # AVB
 BOARD_AVB_ENABLE := true
 
-# Recovery
+# Recovery. Literal path: a lazily expanded $(LOCAL_PATH) here resolves to
+# whatever Android.mk was parsed last, silently dropping recovery/root.
+TARGET_RECOVERY_DEVICE_DIRS := device/lenovo/TB373FU
 TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery.fstab
 TARGET_RECOVERY_PIXEL_FORMAT := RGBX_8888
 TARGET_USES_MKE2FS := true
