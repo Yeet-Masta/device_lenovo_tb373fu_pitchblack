@@ -1,15 +1,16 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# OrangeFox for the Lenovo Idea Tab Pro (TB373FU).
+# PitchBlack Recovery for the Lenovo Idea Tab Pro (TB373FU).
 #
 # Recovery lives in vendor_boot as the "recovery" ramdisk fragment, next to the
-# platform fragment that normal boot needs (first-stage fstab, the 207-module
-# load list, touch firmware). Only the recovery fragment comes from this build:
-# FOX_REFERENCE_VENDOR_BOOT_IMAGE (vendorsetup.sh) repacks it into a known-good
-# LineageOS vendor_boot, so the platform fragment, dtb and cmdline the ROM boots
-# with stay byte-identical. Kernel modules are therefore NOT shipped here -
-# first-stage init loads them from the platform fragment in recovery too.
+# platform fragment that normal boot needs (first-stage fstab, the 222-module
+# load list, touch firmware). Only the recovery fragment from this build is
+# used: it is repacked into the ROM's own vendor_boot (see README), so the
+# platform fragment, dtb and cmdline stay byte-identical to what the ROM boots
+# with. Kernel modules are therefore NOT shipped here - first-stage init loads
+# them from the platform fragment in recovery too, including the beanpod TEE
+# (isee-ffa.ko) and RPMB drivers that decryption needs.
 
 DEVICE_PATH := device/lenovo/TB373FU
 
@@ -103,11 +104,26 @@ TARGET_RECOVERY_PIXEL_FORMAT := RGBX_8888
 TARGET_USES_MKE2FS := true
 TARGET_OTA_ASSERT_DEVICE := TB373FU,TB375FC
 
-# Keep anti-rollback checks in decryption and OTA metadata happy
-PLATFORM_VERSION := 99.87.36
+# Versions and patch levels MUST equal the installed ROM's (Infinity-X 3.12:
+# Android 16, 2026-09-01, vendor 2024-10-05). Beanpod KeyMint reads them at
+# startup; a recovery reporting a NEWER patch level would make KeyMint
+# "upgrade" the stored keys, after which the ROM can no longer use them. An
+# older value only makes decryption fail. Bump these with each ROM security
+# update.
+PLATFORM_VERSION := 16
 PLATFORM_VERSION_LAST_STABLE := $(PLATFORM_VERSION)
-PLATFORM_SECURITY_PATCH := 2099-12-31
-VENDOR_SECURITY_PATCH := $(PLATFORM_SECURITY_PATCH)
+PLATFORM_SECURITY_PATCH := 2026-09-01
+BOOT_SECURITY_PATCH := $(PLATFORM_SECURITY_PATCH)
+VENDOR_SECURITY_PATCH := 2024-10-05
+
+# Decryption: FBE v2 with metadata encryption, keys in the beanpod
+# (microtrust) TEE. The TEE services and their blobs are started from
+# recovery/root (init.recovery.microtrust.rc).
+TW_INCLUDE_CRYPTO := true
+TW_INCLUDE_CRYPTO_FBE := true
+TW_INCLUDE_FBE_METADATA_DECRYPT := true
+TW_USE_FSCRYPT_POLICY := 2
+TW_PREPARE_DATA_MEDIA_EARLY := true
 
 # TWRP
 # The panel is natively 2944x1840 landscape, but the tablet's natural
@@ -127,24 +143,17 @@ TW_INCLUDE_LIBRESETPROP := true
 TW_INCLUDE_REPACKTOOLS := true
 TW_INCLUDE_LPDUMP := true
 TW_INCLUDE_LPTOOLS := true
+TW_INCLUDE_FASTBOOTD := true
 TW_EXCLUDE_APEX := true
+# TWRP's default USB init drives /sys/class/android_usb, which GKI kernels
+# don't have; the configfs gadget in TWRP's init.rc is set up from
+# init.recovery.mt8792.rc instead, matching the ROM's own recovery.
+TW_EXCLUDE_DEFAULT_USB_INIT := true
 TW_NO_HAPTICS := true
 TW_USE_LEGACY_BATTERY_SERVICES := true
 TW_BATTERY_SYSFS_WAIT_SECONDS := 6
 TW_USE_SERIALNO_PROPERTY_FOR_DEVICE_ID := true
 TW_BACKUP_EXCLUSIONS := /data/fonts
+TW_DEVICE_VERSION := TB373FU
 TARGET_USES_LOGD := true
 TWRP_INCLUDE_LOGCAT := true
-
-# Decryption needs the beanpod (MediaTek TEE) keymint/gatekeeper services and
-# teei_daemon in recovery; not wired up yet, so /data must be formatted or left
-# alone. Sideload, OTG/microSD flashing, image flashing and backups work.
-TW_INCLUDE_CRYPTO := false
-
-# OrangeFox
-OF_SCREEN_H := 1728
-OF_STATUS_H := 80
-OF_STATUS_INDENT_LEFT := 48
-OF_STATUS_INDENT_RIGHT := 48
-OF_ALLOW_DISABLE_NAVBAR := 0
-OF_QUICK_BACKUP_LIST := /boot;/vendor_boot;/init_boot;/dtbo;

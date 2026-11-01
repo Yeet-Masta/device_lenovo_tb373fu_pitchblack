@@ -1,14 +1,23 @@
 # TB373FU / TB375FC recovery init. The bootloader reports ro.hardware=mt8792,
 # so init imports init.recovery.mt8792.rc (an mt6897-named file is never read).
-#
+
+import /init.recovery.microtrust.rc
+
 # USB: GKI 6.1 MTK kernels only expose the configfs gadget, while the recovery
 # init.rc defaults sys.usb.configfs to 0 in early-init. Flip it on in init and
-# name the UDC (from stock A16 ROW init.recovery.mt8792.rc), as the LineageOS
-# recovery on this device does.
+# name the UDC (from stock A16 ROW init.recovery.mt8792.rc). This is exactly
+# the setup of the ROM's own recovery, where ADB sideload works; in particular
+# sys.usb.ffs.aio_compat is left at its default.
 on init
     setprop sys.usb.configfs 1
     setprop sys.usb.controller "11201000.usb0"
-    setprop sys.usb.ffs.aio_compat 1
+
+    # Decryption blobs live in the ramdisk under /vendor.
+    export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw
+    setprop crypto.ready 1
+
+on fs
+    install_keyring
 
 # Microsoft OS descriptors speed up Windows enumeration on adb/fastboot switches.
 on boot && property:sys.usb.configfs=1
