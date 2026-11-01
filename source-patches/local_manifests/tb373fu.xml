@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- snapuserd (Virtual A/B) needs libgflags; remove-minimal.xml drops it -->
+  <project path="external/gflags" name="platform/external/gflags" groups="pdk" remote="aosp" />
+</manifest>
